@@ -4,11 +4,13 @@
 package com.obsidianchain;
 
 import com.obsidianchain.components.*;
+import com.obsidianchain.utilities.*;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
 
 
 public class ObsidianChain {
+    public final static int DIFFICULTY = 6;
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
 
     public String getGreeting() {
@@ -17,14 +19,57 @@ public class ObsidianChain {
 
     public void createSomeBlocks() {
         blockchain.add(new Block("Hi im the first block", "0"));
-		
+        System.out.println("Trying to mine block 0..");
+        blockchain.get(0).mine(DIFFICULTY);
+
 		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size() - 1).hash));
-		
+        System.out.println("Trying to mine block 1..");
+        blockchain.get(1).mine(DIFFICULTY);
+
 		blockchain.add(new Block("Hey im the third block", blockchain.get(blockchain.size() - 1).hash));
-		
+        System.out.println("Trying to mine block 2..");
+        blockchain.get(2).mine(DIFFICULTY);
+
         String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
         System.out.println(blockchainJson);
 
+        if (isChainValid()) 
+            System.out.println("Chain is valid :)");
+        else 
+            System.out.println("Chain is invalid..");
+
+    }
+
+    public boolean isChainValid() {
+        Block currBlock;
+        Block prevBlock;
+        String hashTarget = new String(new char[DIFFICULTY]).replace('\0', '0');
+
+        for (int i = 1; i < blockchain.size(); i++) {
+            prevBlock = blockchain.get(i-1);
+            currBlock = blockchain.get(i);
+
+            // Verify current hash
+            if (!currBlock.hash.equals(currBlock.calculateHash())) {
+                System.out.println("Current hash for block:" + i + " does not match what it should be.");
+                return false;
+            }
+
+            // Verify previous hash
+            if (!prevBlock.hash.equals(currBlock.previousHash)) {
+                System.out.println("Current block's previousHash does not match previous block's hash");
+                return false;
+            }
+
+            //Verify hash has been solved
+            if (!currBlock.hash.substring(0, DIFFICULTY).equals(hashTarget)) {
+                System.out.println("This block has yet to be mined");
+                return false;
+            }
+
+        }
+
+        return true;
     }
 
     public static void main(String[] args) {
@@ -32,5 +77,7 @@ public class ObsidianChain {
         
         System.out.println(oc.getGreeting());
         oc.createSomeBlocks();
+
+        
     }
 }

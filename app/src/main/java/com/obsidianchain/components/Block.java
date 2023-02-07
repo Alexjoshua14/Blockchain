@@ -8,6 +8,7 @@ public class Block {
     public String previousHash;
     private String data;
     private long timestamp;
+    private int nonce;
 
     public Block(String data, String previousHash) {
         this.data = data;
@@ -23,9 +24,18 @@ public class Block {
         String calculatedHash = StringUtil.applySHA256(
             previousHash +
             Long.toString(timestamp) +
+            Integer.toString(nonce) +
             data
         );
 
         return calculatedHash;
+    }
+
+    public void mine(int difficulty) {
+        String target = new String(new char[difficulty]).replace('\0', '0');
+        while (!hash.substring( 0, difficulty).equals(target)) {
+            nonce++;
+            hash = calculateHash();
+        }
     }
 }
