@@ -18,17 +18,11 @@ public class ObsidianChain {
     }
 
     public void createSomeBlocks() {
-        blockchain.add(new Block("Hi im the first block", "0"));
-        System.out.println("Trying to mine block 0..");
-        blockchain.get(0).mine(DIFFICULTY);
+        addGenesisBlock("This is the first block");
 
-		blockchain.add(new Block("Yo im the second block", blockchain.get(blockchain.size() - 1).hash));
-        System.out.println("Trying to mine block 1..");
-        blockchain.get(1).mine(DIFFICULTY);
+		addBlock("This is the second block");
 
-		blockchain.add(new Block("Hey im the third block", blockchain.get(blockchain.size() - 1).hash));
-        System.out.println("Trying to mine block 2..");
-        blockchain.get(2).mine(DIFFICULTY);
+		addBlock("And this is the third block");
 
         String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
         System.out.println(blockchainJson);
@@ -38,6 +32,18 @@ public class ObsidianChain {
         else 
             System.out.println("Chain is invalid..");
 
+    }
+
+    public void addGenesisBlock(String data) {
+        blockchain.add(new Block(data, "0"));
+        System.out.println("Mining the genesis block");
+        blockchain.get(blockchain.size() - 1).mine(DIFFICULTY);
+    }
+
+    public void addBlock(String data) {
+        blockchain.add(new Block(data, blockchain.get(blockchain.size() - 1).hash));
+        System.out.println("Mining the block #" + blockchain.size());
+        blockchain.get(blockchain.size() - 1).mine(DIFFICULTY);
     }
 
     public boolean isChainValid() {
@@ -77,7 +83,5 @@ public class ObsidianChain {
         
         System.out.println(oc.getGreeting());
         oc.createSomeBlocks();
-
-        
     }
 }
