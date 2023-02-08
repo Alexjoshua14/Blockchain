@@ -1,8 +1,10 @@
 package com.obsidianchain.components;
 
 public class TransactionInput {
-    
-    public TransactionInput() {
-        
+    public String transactionOutputId;
+    public TransactionOutput UTXO;
+
+    public TransactionInput(String transactionOutputId) {
+        this.transactionOutputId = transactionOutputId;
     }
 }

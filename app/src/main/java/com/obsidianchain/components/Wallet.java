@@ -11,6 +11,14 @@ public class Wallet {
          generateKeyPair();
     }
 
+    public PrivateKey getPrivateKey() {
+        return this.privateKey;
+    }
+
+    public PublicKey getPublicKey() {
+        return this.publicKey;
+    }
+
     private void generateKeyPair() {
         try {
             // Instantiate various security components

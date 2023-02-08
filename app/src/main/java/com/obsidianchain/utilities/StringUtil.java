@@ -57,4 +57,8 @@ public class StringUtil {
     public static String getStringFromKey(Key key) {
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
+
+    public static String compileData(PublicKey s, PublicKey r, float v) {
+        return getStringFromKey(s) + getStringFromKey(r) + Float.toString(v);
+    }
 }

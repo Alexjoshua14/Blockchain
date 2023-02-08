@@ -7,11 +7,20 @@ import com.obsidianchain.components.*;
 import com.obsidianchain.utilities.*;
 import com.google.gson.GsonBuilder;
 import java.util.ArrayList;
-
+import java.security.Security;
+import java.util.Base64;
+import java.util.HashMap;
 
 public class ObsidianChain {
-    public final static int DIFFICULTY = 6;
+    public final static int DIFFICULTY = 5;
+    public final static float minimumTransaction = 2f;
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
+
+    //Keeps track of unspent coins
+    public static HashMap<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>();
+
+    private static Wallet walletA;
+    private static Wallet walletB;
 
     public String getGreeting() {
         return "Hello World!";
@@ -80,7 +89,23 @@ public class ObsidianChain {
 
     public static void main(String[] args) {
         ObsidianChain oc = new ObsidianChain();
-        
+
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+        walletA = new Wallet();
+        walletB = new Wallet();
+
+        System.out.println("Private and public keys: ");
+        System.out.println("\t" + StringUtil.getStringFromKey(walletA.getPrivateKey()));
+        System.out.println("\t" + StringUtil.getStringFromKey(walletA.getPublicKey()));
+
+        Transaction transaction = new Transaction(walletA.getPublicKey(), walletB.getPublicKey(), 5, null);
+        transaction.generateSignature(walletA.getPrivateKey());
+
+        System.out.println("Is signature verified: " + transaction.verifySignature());
+
+
+
         System.out.println(oc.getGreeting());
         oc.createSomeBlocks();
     }
