@@ -36,6 +36,7 @@ public class Block {
         while (!hash.substring( 0, difficulty).equals(target)) {
             nonce++;
             hash = calculateHash();
+            
         }
     }
 }
