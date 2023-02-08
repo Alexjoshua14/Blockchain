@@ -13,8 +13,9 @@ import java.util.HashMap;
 
 public class ObsidianChain {
     public final static int DIFFICULTY = 5;
-    public final static float minimumTransaction = 2f;
+    public final static float minimumTransaction = 0.1f;
     public static ArrayList<Block> blockchain = new ArrayList<Block>();
+    public static Transaction gensisTransaction;
 
     //Keeps track of unspent coins
     public static HashMap<String, TransactionOutput> UTXOs = new HashMap<String, TransactionOutput>();
@@ -26,36 +27,12 @@ public class ObsidianChain {
         return "Hello World!";
     }
 
-    public void createSomeBlocks() {
-        addGenesisBlock("This is the first block");
-
-		addBlock("This is the second block");
-
-		addBlock("And this is the third block");
-
-        String blockchainJson = new GsonBuilder().setPrettyPrinting().create().toJson(blockchain);
-        System.out.println(blockchainJson);
-
-        if (isChainValid()) 
-            System.out.println("Chain is valid :)");
-        else 
-            System.out.println("Chain is invalid..");
-
+    public static void addBlock(Block block) {
+        block.mine(DIFFICULTY);
+        blockchain.add(block);
     }
 
-    public void addGenesisBlock(String data) {
-        blockchain.add(new Block(data, "0"));
-        System.out.println("Mining the genesis block");
-        blockchain.get(blockchain.size() - 1).mine(DIFFICULTY);
-    }
-
-    public void addBlock(String data) {
-        blockchain.add(new Block(data, blockchain.get(blockchain.size() - 1).hash));
-        System.out.println("Mining the block #" + blockchain.size());
-        blockchain.get(blockchain.size() - 1).mine(DIFFICULTY);
-    }
-
-    public boolean isChainValid() {
+    public static boolean isChainValid() {
         Block currBlock;
         Block prevBlock;
         String hashTarget = new String(new char[DIFFICULTY]).replace('\0', '0');
@@ -95,18 +72,47 @@ public class ObsidianChain {
         walletA = new Wallet();
         walletB = new Wallet();
 
-        System.out.println("Private and public keys: ");
-        System.out.println("\t" + StringUtil.getStringFromKey(walletA.getPrivateKey()));
-        System.out.println("\t" + StringUtil.getStringFromKey(walletA.getPublicKey()));
+        Wallet bifold = new Wallet();
 
-        Transaction transaction = new Transaction(walletA.getPublicKey(), walletB.getPublicKey(), 5, null);
-        transaction.generateSignature(walletA.getPrivateKey());
+        Transaction genesisTransaction = new Transaction(bifold.getPublicKey(), walletA.getPublicKey(), 100f, null);
+        genesisTransaction.generateSignature(bifold.getPrivateKey());
+        genesisTransaction.transactionId = "0";
+        genesisTransaction.outputs.add(new TransactionOutput(
+                                                genesisTransaction.recipient, 
+                                                genesisTransaction.value, 
+                                                genesisTransaction.transactionId));
+        UTXOs.put(genesisTransaction.outputs.get(0).id, genesisTransaction.outputs.get(0));
 
-        System.out.println("Is signature verified: " + transaction.verifySignature());
+        System.out.println("Creating and mining the genesis block..");
 
+        Block genesis = new Block("0");
+        genesis.addTransaction(genesisTransaction);
+        addBlock(genesis);
 
+        // Additional blocks for testing purposes
+        Block block1 = new Block(genesis.hash);
+        System.out.println("Wallet A's balance is: " + walletA.getBalance());
+        System.out.println("Wallet B's balance is: " + walletB.getBalance());
+        System.out.println("Wallet A is attempting to send funds (40) to Wallet B..");        
+        block1.addTransaction(walletA.sendFunds(walletB.publicKey, 40f));
+        addBlock(block1);
+        System.out.println("Wallet A's balance is: " + walletA.getBalance());
+        System.out.println("Wallet B's balance is:" + walletB.getBalance());
 
-        System.out.println(oc.getGreeting());
-        oc.createSomeBlocks();
+        Block block2 = new Block(block1.hash);
+        System.out.println("Wallet A is attempting to send funds (1000) to Wallet B..");        
+        block2.addTransaction(walletA.sendFunds(walletB.publicKey, 1000f));
+        addBlock(block2);
+        System.out.println("Wallet A's balance is: " + walletA.getBalance());
+        System.out.println("Wallet B's balance is:" + walletB.getBalance());
+
+        Block block3 = new Block(block2.hash);
+        System.out.println("Wallet A is attempting to send funds (20) to Wallet B..");        
+        block3.addTransaction(walletA.sendFunds(walletB.publicKey, 20));
+        addBlock(block3);
+        System.out.println("Wallet A's balance is: " + walletA.getBalance());
+        System.out.println("Wallet B's balance is:" + walletB.getBalance());
+
+        isChainValid();
     }
 }

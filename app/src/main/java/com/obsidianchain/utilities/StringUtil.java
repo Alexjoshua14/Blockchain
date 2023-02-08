@@ -1,7 +1,9 @@
 package com.obsidianchain.utilities;
 
+import com.obsidianchain.components.Transaction;
 import java.security.*;
 import java.util.Base64;
+import java.util.ArrayList;
 
 public class StringUtil {
     
@@ -60,5 +62,29 @@ public class StringUtil {
 
     public static String compileData(PublicKey s, PublicKey r, float v) {
         return getStringFromKey(s) + getStringFromKey(r) + Float.toString(v);
+    }
+
+    public static String getMerkleRoot(ArrayList<Transaction> transactions) {
+        int count = transactions.size();
+        ArrayList<String> previousTreeLayer = new ArrayList<String>();
+
+        for (Transaction t : transactions) {
+            previousTreeLayer.add(t.transactionId);
+        }
+        
+        ArrayList<String> treeLayer = previousTreeLayer;
+
+        while (count > 1) {
+            treeLayer = new ArrayList<String>();
+
+            for (int i = 1; i < previousTreeLayer.size(); i++) {
+                treeLayer.add(applySHA256(previousTreeLayer.get(i-1) + previousTreeLayer.get(i)));
+            }
+            count = treeLayer.size();
+            previousTreeLayer = treeLayer;
+        }
+
+        return (treeLayer.size() == 1) ? treeLayer.get(0) : "";
+
     }
 }
